@@ -183,9 +183,9 @@ window.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // buttonCarregar.addEventListener("click", function() {
-    //     importDB();
-    // });
+    buttonCarregar.addEventListener("click", function() {
+        importDB();
+    });
 
     buttonLimpar.addEventListener("click", function() {
         if (confirm("Deseja realmente apagar as informações? ") == true) {
@@ -218,14 +218,21 @@ window.addEventListener("DOMContentLoaded", function() {
                 Alertar("Nenhuma câmera encontrada",false);
             }
         }).catch((error) => {
-            Alertar("Câmeras em uso",false);
+            if(error.message == "Device in use") { 
+                Alertar("Câmera em uso",false);
+            } else {
+                Alertar("Erro acessando a câmera: " + error.message,false);
+            }
         });
     }
     function stopScan() {
-        html5QrCode.stop().then((ignore) => {
-            // QR Code scanning is stopped.
-        }).catch((err) => {
-            // Stop failed, handle it.
+        html5QrCode.stop().then(() => {
+             // QR Code scanning is stopped.
+        }).catch((error) => {
+            console.error("An error occurred:");
+            console.error("Name:", error.name);
+            console.error("Message:", error.message);
+            console.error("Stack:", error.stack);
         });
     }
     function onScanSuccess(decodedText, decodedResult) {
