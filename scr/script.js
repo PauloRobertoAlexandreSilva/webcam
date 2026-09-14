@@ -63,12 +63,11 @@ window.addEventListener("DOMContentLoaded", function() {
     const buttonEncerrar = document.getElementById("buttonEncerrar");
 
     const divAlerta = document.getElementById("divAlerta");
-    
 
     let ultimaEntrada;
 
 
-    function Alertar(msg, ok) {1
+    function Alertar(msg, ok) {
         divAlerta.innerHTML = msg;
         divAlerta.classList.remove("alert-success");
         divAlerta.classList.remove("alert-danger");
@@ -137,14 +136,7 @@ window.addEventListener("DOMContentLoaded", function() {
     inputNome.addEventListener("keydown", function() {
         this.value = this.value.toUpperCase();
     });
-
-    inputCPF.addEventListener("keydown", function(e) {
-        if (e.code.includes('Enter')) {
-            buttonEntrar.click();
-        }
-    });
-
-
+    
     buttonProximo.addEventListener("click", function() {
         if(inputTurma.value != '' && inputNome.value != '' && inputData.value != '' && inputInicio.value != '' && inputTermino.value != '' ) {
 
@@ -164,6 +156,8 @@ window.addEventListener("DOMContentLoaded", function() {
         }
     });
 
+
+
     buttonVoltar.addEventListener("click", function() {
         $('#presenca').DataTable().clear().draw();
         $('#presenca').DataTable().destroy();
@@ -175,20 +169,12 @@ window.addEventListener("DOMContentLoaded", function() {
         buttonProximo.focus();
     });
 
-    buttonEntrar.addEventListener("click", function() {
-        Alertar("");
-        if(inputCPF.value != "") {
-            ultimaEntrada = inputCPF.value;
-            PesquisarCPF(); 
-        }
-    });
-
     buttonCarregar.addEventListener("click", function() {
         importDB();
     });
-
+    
     buttonLimpar.addEventListener("click", function() {
-        if (confirm("Deseja realmente apagar as informações? ") == true) {
+        if (confirm("Deseja realmente apagar a informação dos participantes que já entraram? ") == true) {
             ultimaEntrada="";
             inputCPF.value="";
             Alertar("");
@@ -196,9 +182,23 @@ window.addEventListener("DOMContentLoaded", function() {
             renderPresentes();
         }
     });
-
+    
     buttonEncerrar.addEventListener("click", function() {
         exportDB();
+    });
+
+    inputCPF.addEventListener("keydown", function(e) {
+        if (e.code === 'Enter') {
+            buttonEntrar.click();
+        }
+    });
+
+    buttonEntrar.addEventListener("click", function() {
+        Alertar("");
+        if(inputCPF.value != "") {
+            ultimaEntrada = inputCPF.value;
+            PesquisarCPF(); 
+        }
     });
 
     

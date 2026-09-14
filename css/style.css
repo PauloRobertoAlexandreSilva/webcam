@@ -19,20 +19,20 @@ input[type=text], input[type=date], input[type=time] {
 
 #pagina1 {
     display: block;
-    position: absolute; max-width: 600px; width: 90vw;
+    position: absolute; max-width: 800px; min-width: 550px; width: 90vw;
     top: 50%; left: 50%; transform: translate(-50%,-50%);
-    background-color: rgba(179, 207, 250, 0.5);
+    background-color: rgba(30, 90, 180, 0.5);
     border: 1px solid black; border-radius: 15px;
     padding: 35px;  
-    box-shadow: 0px 2px 12px black;
+    box-shadow: 0px 0px 12px black;
     backdrop-filter: blur(5px);
 }
 
 #pagina2 {
     display: none;
-    position: absolute; max-width: 900px; width: 90vw;
+    position: absolute; max-width: 900px; min-width: 700px; width: 90vw;
     top: 50%; left: 50%; transform: translate(-50%,-50%);
-    background-color: rgba(179, 207, 250, 0.5);
+    background-color: rgba(30, 90, 180, 0.5);
     border: 1px solid black; border-radius: 15px;
     padding: 35px;  
     box-shadow: 0px 2px 12px black;
