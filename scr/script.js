@@ -43,6 +43,34 @@ function fileExists(url) {
     return http.status != 404;
 }
 
+function Descriptografar(base64Str) {
+    // Configurações idênticas ao C#
+    const saltFixo = CryptoJS.enc.Utf8.parse("SaltFixoDe16Bytes");
+    const ivFixo = CryptoJS.enc.Utf8.parse("IvFixoDe16Bytes_");
+    palavraChave =  "ESAJ-DITEC";
+
+    // Deriva a chave usando as mesmas configurações
+    const chave = CryptoJS.PBKDF2(palavraChave, saltFixo, {
+        keySize: 256 / 32,
+        iterations: 1000,
+        hasher: CryptoJS.algo.SHA256
+    });
+
+    // Descriptografa diretamente a string Base64 recebida
+    const decrypted = CryptoJS.AES.decrypt(
+        base64Str,
+        chave,
+        {
+            iv: ivFixo,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.Pkcs7
+        }
+    );
+
+    return decrypted.toString(CryptoJS.enc.Utf8);
+}
+
+
 let arquivo = "";
 let inscritos = [];
 let presentes = [];
@@ -236,6 +264,9 @@ window.addEventListener("DOMContentLoaded", function() {
         });
     }
     function onScanSuccess(decodedText, decodedResult) {
+        
+        decodedText = Descriptografar(decodedText);
+
         if(decodedText != ultimaEntrada) {
             ultimaEntrada = decodedText;
 
