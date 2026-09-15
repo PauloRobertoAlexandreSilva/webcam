@@ -264,6 +264,8 @@ window.addEventListener("DOMContentLoaded", function() {
         });
     }
     function onScanSuccess(decodedText, decodedResult) {
+
+        console.log(`Código QR lido: ${decodedText}`);
         
         decodedText = Descriptografar(decodedText);
 
