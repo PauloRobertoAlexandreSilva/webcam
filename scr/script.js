@@ -44,24 +44,16 @@ function fileExists(url) {
 }
 
 function Descriptografar(base64Str) {
-    // Configurações idênticas ao C#
-    const saltFixo = CryptoJS.enc.Utf8.parse("SaltFixoDe16Bytes");
-    const ivFixo = CryptoJS.enc.Utf8.parse("IvFixoDe16Bytes_");
-    palavraChave =  "ESAJ-DITEC";
+    // Convert key and IV to WordArray
+    const key = CryptoJS.enc.Utf8.parse("ESAJ-DITEC092026");
+    const iv = CryptoJS.enc.Utf8.parse("1234567890ABCDEF");
 
-    // Deriva a chave usando as mesmas configurações
-    const chave = CryptoJS.PBKDF2(palavraChave, saltFixo, {
-        keySize: 256 / 32,
-        iterations: 1000,
-        hasher: CryptoJS.algo.SHA256
-    });
-
-    // Descriptografa diretamente a string Base64 recebida
+    // Decrypt
     const decrypted = CryptoJS.AES.decrypt(
-        base64Str,
-        chave,
+        { ciphertext: CryptoJS.enc.Base64.parse(base64Str) },
+        key,
         {
-            iv: ivFixo,
+            iv: iv,
             mode: CryptoJS.mode.CBC,
             padding: CryptoJS.pad.Pkcs7
         }
@@ -150,7 +142,7 @@ window.addEventListener("DOMContentLoaded", function() {
         } else {
             Alertar("ENTRADA PROIBIDA",false);
         }
-        beep(200, 440, 100);
+        beep(100, 200, 100);
 
         inputCPF.focus();
         inputCPF.select();
@@ -216,7 +208,7 @@ window.addEventListener("DOMContentLoaded", function() {
     });
 
     inputCPF.addEventListener("keydown", function(e) {
-        if (e.code === 'Enter') {
+        if (e.code === 'Enter' || e.code === 'NumpadEnter') {
             buttonEntrar.click();
         }
     });
@@ -265,22 +257,28 @@ window.addEventListener("DOMContentLoaded", function() {
     }
     function onScanSuccess(decodedText, decodedResult) {
 
-        console.log(`Código QR lido: ${decodedText}`);
-        
         decodedText = Descriptografar(decodedText);
 
         if(decodedText != ultimaEntrada) {
             ultimaEntrada = decodedText;
 
-            if(decodedText.length = 11) {
-                inputCPF.value= decodedText
+            if(decodedText.length = 23) {
+                if(inputTurma.value != decodedText.split("-")[0]) {
+                    Alertar("Turma incorreta", false);
+                    return;
+                }
+
+                inputCPF.value= decodedText.split("-")[1];
                 formatCPF(inputCPF);
                 PesquisarCPF();
             } else {
-                console.log("decodedText capturado não reconhecido", decodedText);
+                Alertar("QR Code inválido", false);
             }
             //html5QrcodeScanner.clear();
-        }   
+        } else {
+            Alertar("QR Code já lido", false);
+            beep(100, 200, 10);
+        }  
     }
     function onScanFailure(error) {
         // Ignora erros de leitura
