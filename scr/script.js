@@ -1,5 +1,6 @@
 const myAudioContext = new AudioContext();
 function beep(duration, frequency, volume) {
+
     return new Promise((resolve, reject) => {
         duration = duration || 200;
         frequency = frequency || 440;
@@ -25,7 +26,17 @@ function beep(duration, frequency, volume) {
         } catch (error) {
             reject(error);
         }
+
+        sleep(500);
     });
+}
+
+function sleep(milliseconds) {
+    const date = Date.now();
+    let currentDate = null;
+    do {
+        currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
 }
 
 function formatCPF(input) {
@@ -41,12 +52,6 @@ function fileExists(url) {
     http.open('HEAD', url, false);
     http.send();
     return http.status != 404;
-}
-
-function decodeHtmlEntities(str) {
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = str;
-    return textarea.value;
 }
 
 function Descriptografar(base64Str) {
@@ -70,6 +75,11 @@ function Descriptografar(base64Str) {
     return decrypted.toString(CryptoJS.enc.Utf8);
 }
 
+function decodeHtmlEntities(str) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = str;
+    return textarea.value;
+}
 
 let arquivo = "";
 let inscritos = [];
@@ -94,7 +104,6 @@ window.addEventListener("DOMContentLoaded", function() {
 
     let ultimaEntrada;
 
-
     function Alertar(msg, ok) {
         divAlerta.innerHTML = msg;
         divAlerta.classList.remove("alert-success");
@@ -106,6 +115,8 @@ window.addEventListener("DOMContentLoaded", function() {
             } else {
                 divAlerta.classList.add("alert-danger");
             }
+
+            beep(100, 200, 50);
         }
     }
 
@@ -150,7 +161,6 @@ window.addEventListener("DOMContentLoaded", function() {
         } else {
             Alertar("ENTRADA PROIBIDA",false);
         }
-        beep(100, 200, 100);
 
         inputCPF.focus();
         inputCPF.select();
@@ -267,26 +277,26 @@ window.addEventListener("DOMContentLoaded", function() {
 
         decodedText = Descriptografar(decodedText);
 
-        if(decodedText != ultimaEntrada) {
-            ultimaEntrada = decodedText;
+        if(decodedText.length != 23 && decodedText.indexOf("-") != 11) {
+            Alertar("QR Code inválido", false);
+            return;
+        }
+        if(inputTurma.value != decodedText.split("-")[0]) {
+            Alertar("Turma incorreta", false);
+            return;
+        } 
 
-            if(decodedText.length = 23) {
-                if(inputTurma.value != decodedText.split("-")[0]) {
-                    Alertar("Turma incorreta", false);
-                    return;
-                }
+        inputCPF.value= decodedText.split("-")[1];
+        formatCPF(inputCPF);
+        PesquisarCPF();
 
-                inputCPF.value= decodedText.split("-")[1];
-                formatCPF(inputCPF);
-                PesquisarCPF();
-            } else {
-                Alertar("QR Code inválido", false);
-            }
-            //html5QrcodeScanner.clear();
-        } else {
-            Alertar("QR Code já lido", false);
-            beep(100, 200, 10);
-        }  
+        if(decodedText == ultimaEntrada) {
+            Alertar( divAlerta.innerHTML, false);
+        }
+        
+        ultimaEntrada = decodedText;
+
+        //html5QrcodeScanner.clear();
     }
     function onScanFailure(error) {
         // Ignora erros de leitura
