@@ -90,16 +90,39 @@ function importDB() {
     const reader = new FileReader();
 
     reader.onload = function() {
-        console.log('onload');
-
         const uInt8Array = new Uint8Array(reader.result);
-        console.log('uInt8Array',uInt8Array);
 
         db = new SQL.Database(uInt8Array);
-        console.log('db',db);
+        //console.log('db',db);
 
         saveLocalStorage();
         renderPresentes();
     };
     reader.readAsArrayBuffer(file);
+}
+
+
+function exportToCsv() {
+
+    if(presentes.length == 0) {
+        alert("Não há participantes para exportar.");
+        return;
+    }
+
+    var CsvString = "";
+
+    console.log('presentes', presentes);
+
+
+    for(let i = 0; i < presentes.length; i++) {
+        CsvString += presentes[i].id + ',' + presentes[i].cpf + ',' + presentes[i].nome + ',' + presentes[i].entrada + "\r\n";
+    }
+
+    CsvString = "data:application/csv," + encodeURIComponent(CsvString);
+
+    var x = document.createElement("A");
+    x.setAttribute("href", CsvString );
+    x.setAttribute("download","presentes.csv");
+    document.body.appendChild(x);
+    x.click();
 }
