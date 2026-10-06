@@ -1,5 +1,6 @@
 const myAudioContext = new AudioContext();
 function beep(duration, frequency, volume) {
+
     return new Promise((resolve, reject) => {
         duration = duration || 200;
         frequency = frequency || 440;
@@ -25,7 +26,17 @@ function beep(duration, frequency, volume) {
         } catch (error) {
             reject(error);
         }
+
+        sleep(500);
     });
+}
+
+function sleep(milliseconds) {
+    const date = Date.now();
+    let currentDate = null;
+    do {
+        currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
 }
 
 function formatCPF(input) {
@@ -44,24 +55,18 @@ function fileExists(url) {
 }
 
 function Descriptografar(base64Str) {
-    // Configurações idênticas ao C#
-    const saltFixo = CryptoJS.enc.Utf8.parse("SaltFixoDe16Bytes");
-    const ivFixo = CryptoJS.enc.Utf8.parse("IvFixoDe16Bytes_");
-    palavraChave =  "ESAJ-DITEC";
+    // Convert key and IV to WordArray
+    const key = CryptoJS.enc.Utf8.parse("ESAJ-DITEC092026");
+    const iv = CryptoJS.enc.Utf8.parse("1234567890ABCDEF");
+    const decodedText = decodeHtmlEntities(base64Str);
 
-    // Deriva a chave usando as mesmas configurações
-    const chave = CryptoJS.PBKDF2(palavraChave, saltFixo, {
-        keySize: 256 / 32,
-        iterations: 1000,
-        hasher: CryptoJS.algo.SHA256
-    });
-
-    // Descriptografa diretamente a string Base64 recebida
+    
+    // Decrypt
     const decrypted = CryptoJS.AES.decrypt(
-        base64Str,
-        chave,
+        { ciphertext: CryptoJS.enc.Base64.parse(decodedText) },
+        key,
         {
-            iv: ivFixo,
+            iv: iv,
             mode: CryptoJS.mode.CBC,
             padding: CryptoJS.pad.Pkcs7
         }
@@ -70,6 +75,11 @@ function Descriptografar(base64Str) {
     return decrypted.toString(CryptoJS.enc.Utf8);
 }
 
+function decodeHtmlEntities(str) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = str;
+    return textarea.value;
+}
 
 let arquivo = "";
 let inscritos = [];
@@ -94,7 +104,6 @@ window.addEventListener("DOMContentLoaded", function() {
 
     let ultimaEntrada;
 
-
     function Alertar(msg, ok) {
         divAlerta.innerHTML = msg;
         divAlerta.classList.remove("alert-success");
@@ -106,6 +115,8 @@ window.addEventListener("DOMContentLoaded", function() {
             } else {
                 divAlerta.classList.add("alert-danger");
             }
+
+            beep(100, 200, 50);
         }
     }
 
@@ -150,7 +161,6 @@ window.addEventListener("DOMContentLoaded", function() {
         } else {
             Alertar("ENTRADA PROIBIDA",false);
         }
-        beep(200, 440, 100);
 
         inputCPF.focus();
         inputCPF.select();
@@ -217,7 +227,7 @@ window.addEventListener("DOMContentLoaded", function() {
     });
 
     inputCPF.addEventListener("keydown", function(e) {
-        if (e.code === 'Enter') {
+        if (e.code === 'Enter' || e.code === 'NumpadEnter') {
             buttonEntrar.click();
         }
     });
@@ -265,23 +275,29 @@ window.addEventListener("DOMContentLoaded", function() {
         });
     }
     function onScanSuccess(decodedText, decodedResult) {
-        
-        console.log(`Código QR lido: ${decodedText}`, decodedResult);
 
         decodedText = Descriptografar(decodedText);
 
-        if(decodedText != ultimaEntrada) {
-            ultimaEntrada = decodedText;
+        if(decodedText.length != 23 && decodedText.indexOf("-") != 11) {
+            Alertar("QR Code inválido", false);
+            return;
+        }
+        if(inputTurma.value != decodedText.split("-")[0]) {
+            Alertar("Turma incorreta", false);
+            return;
+        } 
 
-            if(decodedText.length = 11) {
-                inputCPF.value= decodedText
-                formatCPF(inputCPF);
-                PesquisarCPF();
-            } else {
-                console.log("decodedText capturado não reconhecido", decodedText);
-            }
-            //html5QrcodeScanner.clear();
-        }   
+        inputCPF.value= decodedText.split("-")[1];
+        formatCPF(inputCPF);
+        PesquisarCPF();
+
+        if(decodedText == ultimaEntrada) {
+            Alertar( divAlerta.innerHTML, false);
+        }
+        
+        ultimaEntrada = decodedText;
+
+        //html5QrcodeScanner.clear();
     }
     function onScanFailure(error) {
         // Ignora erros de leitura
