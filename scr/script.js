@@ -81,100 +81,127 @@ function decodeHtmlEntities(str) {
     return textarea.value;
 }
 
+function Alertar(msg, ok) {
+    divAlerta.innerHTML = msg;
+    divAlerta.classList.remove("alert-success");
+    divAlerta.classList.remove("alert-danger");
+
+    if(msg != "") {
+        if(ok) {
+            divAlerta.classList.add("alert-success");
+        } else {
+            divAlerta.classList.add("alert-danger");
+        }
+
+        beep(100, 200, 50);
+    }
+}
+
+function LerInscritos() {
+    inscritos = [];
+
+    Alertar("");
+
+    try {
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("GET", inputTurma.value + ".xml", false);
+        xhttp.send();
+
+        // Obtém a lista de inscritos
+        const xmlDoc = xhttp.responseXML;
+        const rows = xmlDoc.getElementsByTagName("ROW");
+
+        // Percorre a lista de inscritos
+        for (let i = 0; i < rows.length; i++) {
+            const cpf  = rows[i].getElementsByTagName("CPF")[0].innerHTML;
+            const nome = rows[i].getElementsByTagName("NOME")[0].innerHTML;
+
+            inscritos.push({"cpf": cpf, "nome": nome});
+        }
+    }
+    catch(e) {
+        Alertar("INSCRITOS NÃO CARREGADOS", false);
+    }
+}
+
+function LerEntrada() {
+    renderPresentes();
+}
+
+function PesquisarCPF() {
+    const result = inscritos.find(participante => participante.cpf == inputCPF.value);
+
+    if(result != undefined) {
+        Alertar(result.nome,true);
+
+        insertLocalStorage(result);
+    } else {
+        Alertar("ENTRADA PROIBIDA",false);
+    }
+
+    inputCPF.focus();
+    inputCPF.select();
+}
+
 let arquivo = "";
 let inscritos = [];
 let presentes = [];
 
 window.addEventListener("DOMContentLoaded", function() {
+
+    document.getElementById("pag1").style.display="block";
+    document.getElementById("pag2").style.display="none";
+    document.getElementById("pag3").style.display="none";
+    document.getElementById("pag4").style.display="none";
+
+    // navegação entre páginas
+    const buttonImportarDB = document.getElementById("buttonImportarDB");
+    const buttonImportarCSV = document.getElementById("buttonImportarCSV");
+    const buttonProximo = document.getElementById("buttonProximo");
+    const buttonVoltar = document.getElementById("buttonVoltar");
+    const buttonVoltar2 = document.getElementById("buttonVoltar2");
+    const buttonVoltar3 = document.getElementById("buttonVoltar3");
+
+    // elementos da página 1
     const inputTurma = document.getElementById("inputTurma");
     const inputNome = document.getElementById("inputNome");
     const inputData = document.getElementById("inputData");
     const inputInicio = document.getElementById("inputInicio");
     const inputTermino = document.getElementById("inputTermino");
-    const inputCPF = document.getElementById("inputCPF");
 
-    const buttonProximo = document.getElementById("buttonProximo");
-    const buttonVoltar = document.getElementById("buttonVoltar");
-    const buttonEntrar = document.getElementById("buttonEntrar");
-    const buttonCarregar = document.getElementById("buttonCarregar");
+    // elementos da página 2
     const buttonLimpar = document.getElementById("buttonLimpar");
     const buttonEncerrar = document.getElementById("buttonEncerrar");
-
+    const inputCPF = document.getElementById("inputCPF");
+    const buttonEntrar = document.getElementById("buttonEntrar");
     const divAlerta = document.getElementById("divAlerta");
+
+    // elementos da página 3
+    const buttonEscolherArquivoDB = document.getElementById("buttonEscolherArquivoDB");
+
+    // elementos da página 4
+    const buttonEscolherArquivoCSV = document.getElementById("buttonEscolherArquivoCSV");
 
     let ultimaEntrada;
 
-    function Alertar(msg, ok) {
-        divAlerta.innerHTML = msg;
-        divAlerta.classList.remove("alert-success");
-        divAlerta.classList.remove("alert-danger");
+    buttonImportarDB.addEventListener("click", function() {
+        const fileContentDB = document.getElementById('fileContentDB');
+        fileContentDB.textContent = "";
 
-        if(msg != "") {
-            if(ok) {
-                divAlerta.classList.add("alert-success");
-            } else {
-                divAlerta.classList.add("alert-danger");
-            }
-
-            beep(100, 200, 50);
-        }
-    }
-
-    function LerInscritos() {
-        inscritos = [];
-
-        Alertar("");
-
-        try {
-            const xhttp = new XMLHttpRequest();
-            xhttp.open("GET", inputTurma.value + ".xml", false);
-            xhttp.send();
-
-            // Obtém a lista de inscritos
-            const xmlDoc = xhttp.responseXML;
-            const rows = xmlDoc.getElementsByTagName("ROW");
-
-            // Percorre a lista de inscritos
-            for (let i = 0; i < rows.length; i++) {
-                const cpf  = rows[i].getElementsByTagName("CPF")[0].innerHTML;
-                const nome = rows[i].getElementsByTagName("NOME")[0].innerHTML;
-
-                inscritos.push({"cpf": cpf, "nome": nome});
-            }
-        }
-        catch(e) {
-            Alertar("INSCRITOS NÃO CARREGADOS", false);
-        }
-    }
-
-    function LerEntrada() {
-        renderPresentes();
-    }
-
-    function PesquisarCPF() {
-        const result = inscritos.find(participante => participante.cpf == inputCPF.value);
-
-        if(result != undefined) {
-            Alertar(result.nome,true);
-
-            insertLocalStorage(result);
-        } else {
-            Alertar("ENTRADA PROIBIDA",false);
-        }
-
-        inputCPF.focus();
-        inputCPF.select();
-    }
-
-
-    inputTurma.addEventListener("keydown", function() {
-        this.value = this.value.toUpperCase();
+        document.getElementById("pag1").style.display="none";
+        document.getElementById("pag2").style.display="none";
+        document.getElementById("pag3").style.display="block";
+        document.getElementById("pag4").style.display="none";
     });
+    buttonImportarCSV.addEventListener("click", function() {
+        const fileContentCSV = document.getElementById('fileContentCSV');
+        fileContentCSV.textContent = "";
 
-    inputNome.addEventListener("keydown", function() {
-        this.value = this.value.toUpperCase();
+        document.getElementById("pag1").style.display="none";
+        document.getElementById("pag2").style.display="none";
+        document.getElementById("pag3").style.display="none";
+        document.getElementById("pag4").style.display="block";
     });
-    
     buttonProximo.addEventListener("click", function() {
         if(inputTurma.value != '' && inputNome.value != '' && inputData.value != '' && inputInicio.value != '' && inputTermino.value != '' ) {
 
@@ -185,15 +212,22 @@ window.addEventListener("DOMContentLoaded", function() {
             ultimaEntrada = "";
             inputCPF.value = "";
 
-            document.getElementById("pagina1").style.display="none";
-            document.getElementById("pagina2").style.display="block";
+            document.getElementById("pag1").style.display="none";
+            document.getElementById("pag2").style.display="block";
+            document.getElementById("pag3").style.display="none";
+            document.getElementById("pag4").style.display="none";
             startScan();
             
             inputCPF.focus();
             inputCPF.select();
         }
     });
-
+    inputTurma.addEventListener("keydown", function() {
+        this.value = this.value.toUpperCase();
+    });
+    inputNome.addEventListener("keydown", function() {
+        this.value = this.value.toUpperCase();
+    });
 
 
     buttonVoltar.addEventListener("click", function() {
@@ -201,16 +235,13 @@ window.addEventListener("DOMContentLoaded", function() {
         $('#presenca').DataTable().destroy();
         stopScan();
 
-        document.getElementById("pagina1").style.display="block";
-        document.getElementById("pagina2").style.display="none";
+        document.getElementById("pag1").style.display="block";
+        document.getElementById("pag2").style.display="none";
+        document.getElementById("pag3").style.display="none";
+        document.getElementById("pag4").style.display="none";
 
         buttonProximo.focus();
     });
-
-    buttonCarregar.addEventListener("click", function() {
-        importDB();
-    });
-    
     buttonLimpar.addEventListener("click", function() {
         if (confirm("Deseja realmente apagar a informação dos participantes que já entraram? ") == true) {
             ultimaEntrada="";
@@ -220,24 +251,51 @@ window.addEventListener("DOMContentLoaded", function() {
             renderPresentes();
         }
     });
-    
     buttonEncerrar.addEventListener("click", function() {
-        //exportDB();
+        if(presentes.length == 0) {
+            Alertar("Não há participantes para exportar.",false);
+            return;
+        }
+        
+        exportDB();
         exportToCsv();
     });
-
     inputCPF.addEventListener("keydown", function(e) {
         if (e.code === 'Enter' || e.code === 'NumpadEnter') {
             buttonEntrar.click();
         }
     });
-
     buttonEntrar.addEventListener("click", function() {
         Alertar("");
         if(inputCPF.value != "") {
             ultimaEntrada = inputCPF.value;
             PesquisarCPF(); 
         }
+    });
+
+
+    buttonVoltar2.addEventListener("click", function() {
+        document.getElementById("pag1").style.display="block";
+        document.getElementById("pag2").style.display="none";
+        document.getElementById("pag3").style.display="none";
+        document.getElementById("pag4").style.display="none";
+
+        buttonProximo.focus();
+    });
+    buttonEscolherArquivoDB.addEventListener("change", function(event) {
+        importDB(event);
+    });
+
+    buttonVoltar3.addEventListener("click", function() {
+        document.getElementById("pag1").style.display="block";
+        document.getElementById("pag2").style.display="none";
+        document.getElementById("pag3").style.display="none";
+        document.getElementById("pag4").style.display="none";
+
+        buttonProximo.focus();
+    });
+    buttonEscolherArquivoCSV.addEventListener("change", function(event) {
+        importFromCsv(event);
     });
 
     

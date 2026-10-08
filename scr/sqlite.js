@@ -73,6 +73,19 @@ function renderPresentes() {
     });
 }
 
+function importDB() {
+    const file = tabela + '.sqlite';
+    const reader = new FileReader();
+
+    reader.onload = function() {
+        const uInt8Array = new Uint8Array(reader.result);
+        db = new SQL.Database(uInt8Array);
+        saveLocalStorage();
+        renderPresentes();
+    };
+    reader.readAsArrayBuffer(file);
+}
+
 function exportDB() {
     if(presentes.length > 0 ) {
         const data = db.export();
@@ -85,44 +98,55 @@ function exportDB() {
     }
 }
 
-function importDB() {
-    const file = tabela + '.sqlite';
-    const reader = new FileReader();
+function importFromCsv(event) {
+    const fileContentCSV = document.getElementById('fileContentCSV');
+    const file = event.target.files[0]; // Primeiro arquivo selecionado
 
-    reader.onload = function() {
-        const uInt8Array = new Uint8Array(reader.result);
-
-        db = new SQL.Database(uInt8Array);
-        //console.log('db',db);
-
-        saveLocalStorage();
-        renderPresentes();
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-
-function exportToCsv() {
-
-    if(presentes.length == 0) {
-        alert("Não há participantes para exportar.");
+    if (!file) {
+        fileContentCSV.textContent = "Nenhum arquivo selecionado.";
         return;
     }
 
+    // Usa FileReader para ler o conteúdo
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        fileContentCSV.textContent = e.target.result; // Mostra conteúdo
+
+        const csvData = e.target.result;
+        const lines = csvData.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            const [id, cpf, nome, entrada,saida] = line.split(';');
+
+            if(line) {
+                const rs = db.exec("SELECT * FROM " +  tabela + " WHERE cpf = '" + cpf + "'");
+                if (rs.length == 0) {
+                    db.run("INSERT INTO " +  tabela + "(cpf, nome, entrada) VALUES (?, ?, ?)", [cpf, nome, entrada]);
+                    saveLocalStorage();
+                }
+            }
+       }
+    };
+    reader.onerror = function() {
+        fileContentCSV.textContent = "Erro ao ler o arquivo.";
+    };
+
+    // Lê como texto
+    reader.readAsText(file, 'UTF-8');
+}
+
+function exportToCsv() {
     var CsvString = "";
-
-    console.log('presentes', presentes);
-
-
     for(let i = 0; i < presentes.length; i++) {
-        CsvString += presentes[i].id + ',' + presentes[i].cpf + ',' + presentes[i].nome + ',' + presentes[i].entrada + "\r\n";
+        CsvString += presentes[i].id + ';' + presentes[i].cpf + ';' + presentes[i].nome + ';' + presentes[i].entrada + "\r\n";
     }
 
     CsvString = "data:application/csv," + encodeURIComponent(CsvString);
 
     var x = document.createElement("A");
     x.setAttribute("href", CsvString );
-    x.setAttribute("download","presentes.csv");
+    x.setAttribute("download",tabela + ".csv");
     document.body.appendChild(x);
     x.click();
 }
