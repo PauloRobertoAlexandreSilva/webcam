@@ -7,6 +7,7 @@ initSqlJs({
     loadLocalStorage(SQL);
 });
 
+
 function loadLocalStorage(SQL) {
     const base64 = localStorage.getItem(tabela);
 

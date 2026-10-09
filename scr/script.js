@@ -54,6 +54,7 @@ function fileExists(url) {
     return http.status != 404;
 }
 
+
 function Descriptografar(base64Str) {
     // Convert key and IV to WordArray
     const key = CryptoJS.enc.Utf8.parse("ESAJ-DITEC092026");
