@@ -136,7 +136,7 @@ function PesquisarCPF() {
 
         insertLocalStorage(result);
     } else {
-        Alertar("ENTRADA PROIBIDA",false);
+        Alertar("PESSOA NÃO INSCRITA",false);
     }
 
     inputCPF.focus();
